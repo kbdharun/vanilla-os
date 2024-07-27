@@ -1,0 +1,65 @@
+name: Release
+
+on:
+    push:
+      tags:
+        - '*'
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/vanilla-os/pico:main
+      volumes:
+        - /proc:/proc
+        - /:/run/host
+      options: --privileged -it
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: De-bloat stock image
+      run: |
+        rm -r /run/host/usr/share/dotnet
+        rm -r /run/host${{ runner.tool_cache }}
+
+    - name: Install needed packages
+      run: apt update && apt install debootstrap -y
+
+    - name: Build ISO
+      run: ./build.sh etc/terraform.conf
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: VanillaOS 2 Orchid
+        path: builds/
+
+  release-iso:
+    runs-on: ubuntu-latest
+    needs: build-iso
+    permissions:
+      contents: write # to create and upload assets to releases
+      attestations: write # to upload assets attestation for build provenance
+      id-token: write # grant additional permission to attestation action to mint the OIDC token permission
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: VanillaOS 2 Orchid
+
+      - name: Create Release
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "${{ github.ref_name }}" --prerelease amd64/*.iso amd64/*.txt --title Vanilla OS 2 Orchid ${{ github.ref_name }}
+      
+      - name: Attest Release Files
+        id: attest
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: 'amd64/*.iso, amd64/*.txt'
