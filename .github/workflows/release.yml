@@ -6,7 +6,7 @@ on:
         - '*'
 
 jobs:
-  release:
+  build-iso:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vanilla-os/pico:main
@@ -38,16 +38,30 @@ jobs:
         name: Vanilla OS 2 Orchid
         path: builds/
 
-    - uses: softprops/action-gh-release@v2
+  release:
+    runs-on: ubuntu-latest
+    needs: build-iso
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
       with:
-        token: "${{ secrets.GITHUB_TOKEN }}"
-        tag_name: "${{ github.ref_name }}"
-        prerelease: true
-        generate_release_notes: false
-        name: "Vanilla OS ${{ github.ref_name }} Orchid"
-        files: |
-          builds/*
-  
+        fetch-depth: 0
+
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: Vanilla OS 2 Orchid
+
+    - name: Create Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release create "${{ github.ref_name }}" builds/* --prerelease --title "Vanilla OS ${{ github.ref_name }} Orchid"
+
     - name: Attest Release Files
       id: attest
       uses: actions/attest-build-provenance@v1
