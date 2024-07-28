@@ -46,7 +46,7 @@ jobs:
         generate_release_notes: false
         name: "Vanilla OS ${{ github.ref_name }} Orchid"
         files: |
-          builds/
+          builds/*
   
     - name: Attest Release Files
       id: attest
