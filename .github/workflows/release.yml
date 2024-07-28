@@ -46,11 +46,10 @@ jobs:
         generate_release_notes: false
         name: "Vanilla OS ${{ github.ref_name }} Orchid"
         files: |
-          builds/amd/*.iso
-          builds/amd/*.txt
+          builds/
   
     - name: Attest Release Files
       id: attest
       uses: actions/attest-build-provenance@v1
       with:
-        subject-path: 'Vanilla OS 2 Orchid/amd64/*.iso, Vanilla OS 2 Orchid/amd64/*.txt'
+        subject-path: 'builds/'
