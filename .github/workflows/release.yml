@@ -39,7 +39,6 @@ jobs:
         path: builds/
 
     - uses: softprops/action-gh-release@v2
-      if: github.ref == 'refs/heads/main'
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
         tag_name: "${{ github.ref_name }}"
