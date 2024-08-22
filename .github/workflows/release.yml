@@ -1,0 +1,39 @@
+name: Upload ISO to the Latest Release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # Schedule to run the workflow weekly at midnight UTC every Sunday.
+
+jobs:
+  download_extract_upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Download Vanilla OS Latest ZIP
+      run: wget https://download.vanillaos.org/latest.zip -O latest.zip
+
+    - name: Unzip the downloaded file
+      run: unzip latest.zip
+
+    - name: Upload ISO and TXT files to Release
+      working-directory: amd64
+      run: |
+        gh release upload "2.0" *.iso *.txt --clobber --repo vanilla-os/live-iso
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Attest generated files
+      id: attest
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-path: 'amd64/*.iso, amd64/*.txt'
