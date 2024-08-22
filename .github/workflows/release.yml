@@ -6,7 +6,7 @@ on:
     - cron: '0 0 * * 0'  # Schedule to run the workflow weekly at midnight UTC every Sunday.
 
 jobs:
-  download_extract_upload:
+  release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
