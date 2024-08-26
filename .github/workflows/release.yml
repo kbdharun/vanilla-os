@@ -2,8 +2,6 @@ name: Upload ISO to the Latest Release
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0'  # Schedule to run the workflow weekly at midnight UTC every Sunday.
 
 jobs:
   release:
